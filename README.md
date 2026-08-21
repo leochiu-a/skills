@@ -38,16 +38,18 @@ The other two can be reached directly, but neither is a better way to start work
 
 ### Day to day
 
-**Always `/implement`.** Describe the requirement as precisely as you would in a ticket and let it run the loop. `/implement` already calls `/grill-me-ac` as step 1, so starting there gains you nothing — and the more precise your request, the more that step collapses into a single confirmation rather than a round of questions.
+**Default to `/implement`.** Describe the requirement as precisely as you would in a ticket and let it run the loop — the more precise your request, the more the AC step collapses into a single confirmation rather than a round of questions.
 
-Everything else is an exception, and none of them is "this task is important enough to be careful":
+What to type, by situation:
 
-| Situation | What to type | Why not `/implement` |
-| --- | --- | --- |
-| Everyday feature work or bug fix | `/implement` | — |
-| Trivial one-liner, typo, rename | Nothing, just do it | The whole flow is skipped by design |
-| **Another person** has to agree the AC before any code exists | `/grill-me-ac`, get the sign-off, then `/implement` | The loop can't wait on a human in another tab |
-| Reviewing a branch or PR this loop didn't produce | `/code-review` | There's nothing to implement |
+| Situation | What to type |
+| --- | --- |
+| Building a feature or fixing a bug | `/implement` |
+| You want to settle the AC with someone else before any code exists | `/grill-me-ac`, agree on the list, then `/implement` |
+| Reviewing someone else's PR, or any diff this loop didn't produce | `/code-review` |
+| A one-liner, a typo, a rename | Nothing — just make the change |
+
+Note that "this one matters, I should be careful" isn't on that list: `/implement` runs `/grill-me-ac` as step 1 either way.
 
 ## Credits
 
