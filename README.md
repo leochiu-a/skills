@@ -89,4 +89,4 @@ If you'd rather not use the CLI, copying the folders over works too:
 git clone https://github.com/leochiu-a/skills.git && cp -r skills/skills/* ~/.claude/skills/
 ```
 
-Once installed, type `/implement` in Claude Code — or just describe what you want built and let it trigger itself. See *Day to day* above for the two cases where you'd type something else.
+Once installed, type `/implement` in Claude Code — or just describe what you want built and let it trigger itself. See *Day to day* above for the cases where you'd type something else.

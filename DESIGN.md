@@ -2,6 +2,7 @@
 
 Why the loop is shaped the way it is. See the [README](README.md) for what the skills are and how to use them.
 
+- **One way in.** `/implement` is the only step a developer is meant to type. `/tdd` in particular isn't reachable on its own: it takes a confirmed AC from upstream and gets audited downstream, so invoking it directly produces the one thing this whole set exists to avoid — code written against an AC nobody agreed to, graded by the context that wrote it. `/grill-me-ac` and `/code-review` sit at the two ends of the loop and survive on their own, but neither is a better place to start work.
 - **Two buckets of AC.** Machine-verifiable items (tests, typecheck, build) can be verified automatically; human-judgment items (UX, copy, business logic, risk) can only be flagged for a person to look at. Keeping them apart avoids the misleading "everything is green so it's done" report.
 - **Never ask for AC empty-handed.** Draft one first, ask only about the parts you genuinely can't decide, and ask everything at once instead of one question per turn.
 - **Vertical slicing.** One AC item goes red → green before moving to the next, rather than writing every test up front and implementing them together. Refactoring is its own separate pass once everything is green.
