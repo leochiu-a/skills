@@ -1,6 +1,6 @@
 ---
 name: implement
-description: Entry point for implementing a feature or fixing a bug — confirms AC via /grill-me-ac, executes the red-green loop via /tdd, reviews the diff via /code-review, then reports back against the confirmed AC. Use when the developer asks to implement, build, or fix something that isn't a trivial one-line change.
+description: Entry point for implementing a feature or fixing a bug — confirms AC via /grill-me-ac, executes the red-green loop via /tdd, reviews the diff via /code-review, then reports back against the confirmed AC. Use when the developer asks to implement, build, or fix something that isn't a trivial one-line change — including when they ask for it "with TDD", which means this skill, not /tdd on its own.
 ---
 
 # Implement — thin orchestrator

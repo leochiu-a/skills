@@ -1,13 +1,13 @@
 ---
 name: tdd
-description: Implements a feature or fix using the red-green-refactor loop, one vertical slice at a time, testing at public seams instead of internals. Requires a confirmed AC (machine-verifiable list) as input — if AC isn't confirmed yet, run /grill-me-ac first rather than guessing. Use when the developer asks to "implement with TDD", or when /implement hands off after AC is confirmed.
+description: Internal step of /implement, not an entry point — do not invoke it directly in response to a developer request, and do not offer it as an alternative to /implement. Implements a feature or fix using the red-green-refactor loop, one vertical slice at a time, testing at public seams instead of internals. Only runs when /implement hands off a confirmed machine-verifiable AC list; a request to "implement with TDD" is a request for /implement, which supplies the AC upstream and the independent review downstream that this step has neither of on its own.
 ---
 
 # TDD — red, green, one seam at a time
 
 ## Precondition
 
-Needs a `machine` AC list to work from (see `/grill-me-ac`'s output format). If none was supplied, ask for it or run `/grill-me-ac` — don't invent AC on your own.
+Runs as step 2 of `/implement`, which hands in a confirmed `machine` AC list (see `/grill-me-ac`'s output format). If this was reached without one, stop and route back to `/implement` — don't invent AC on your own, and don't proceed on a list nobody confirmed.
 
 ## 1. Find the seam
 
