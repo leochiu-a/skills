@@ -2,16 +2,53 @@
 
 The [Claude Code](https://claude.com/claude-code) skills I use myself. They all revolve around the same idea: **pin down the acceptance criteria (AC) before writing any code, work through them one slice at a time with TDD, then review the diff independently and report back against the AC**.
 
+## Why: Loop Engineering
+
+This whole set exists to make **Loop Engineering** concrete. The unit of work isn't a prompt and a patch — it's a closed loop that an agent can run and that a human can trust the output of:
+
+**Spec → Implement → Verify → Report → back to Spec.**
+
+`grill-me-ac` closes the front of the loop by turning a vague request into criteria that can actually be checked. `tdd` walks those criteria one slice at a time, so every pass through the loop is small enough to reason about. `code-review` closes the back of the loop with an independent check, because a loop that grades its own output drifts. And the report lands back on the same AC the loop started from, so the next iteration begins where the last one measurably ended.
+
+Every design choice below follows from that: the loop has to be able to run unattended, it has to be honest about what it couldn't verify by itself, and its default entry point should be the whole loop rather than one of its steps — with the AC gate available up front when you want to settle the spec before the loop runs.
+
 ## Skills
 
-| Skill | What it does | When it triggers |
-| --- | --- | --- |
-| [`implement`](skills/implement/SKILL.md) | A thin orchestrator: confirm the AC → hand off to TDD → review the diff → report against the AC | A request to implement a feature or fix a bug that isn't a one-line change |
-| [`grill-me-ac`](skills/grill-me-ac/SKILL.md) | Pins down the AC with the fewest possible round trips, split into machine-verifiable and human-judgment buckets | Whenever the AC isn't explicit yet — usable on its own, and also called by `/implement` |
-| [`tdd`](skills/tdd/SKILL.md) | Red-green-refactor, one vertical slice at a time, testing at the public seam rather than internals | You ask for a TDD implementation, or `/implement` hands off after confirming the AC |
-| [`code-review`](skills/code-review/SKILL.md) | Reviews the diff along three independent axes: AC fidelity, repo conventions, and whether the green is trustworthy. Three sub-agents run in parallel and their results are never merged | You ask to review a branch/PR/uncommitted changes, or `/tdd` has just finished |
+One skill is the way in; the rest are the discipline it runs on. Two of them are also useful on their own.
 
-All four work standalone, and they also chain — `/implement` is just the line that strings the other three together.
+### The way in
+
+| Skill | What it does |
+| --- | --- |
+| [`implement`](skills/implement/SKILL.md) | A thin orchestrator: confirm the AC → hand off to TDD → review the diff → report against the AC |
+
+For a feature or a bug fix, `/implement` is the only thing you need to type — it runs the whole loop and hands you back a report against the AC.
+
+### The pieces it composes
+
+| Skill | What it does | When it's reached for |
+| --- | --- | --- |
+| [`grill-me-ac`](skills/grill-me-ac/SKILL.md) | Pins down the AC with the fewest possible round trips, split into machine-verifiable and human-judgment buckets | Step 1 of `/implement` — **or call it yourself first** (see below) |
+| [`tdd`](skills/tdd/SKILL.md) | Red-green-refactor, one vertical slice at a time, testing at the public seam rather than internals | Step 2 of `/implement`, once the AC is confirmed |
+| [`code-review`](skills/code-review/SKILL.md) | Reviews the diff along three independent axes: AC fidelity, repo conventions, and whether the green is trustworthy. Three sub-agents run in parallel and their results are never merged | Step 3 of `/implement`, or on any branch/PR you want reviewed |
+
+**Don't call `/tdd` yourself.** It needs a confirmed AC to work from and has no reviewer downstream of it — calling it directly gets you the middle of the loop with neither end attached. It's the one piece that only makes sense inside `/implement`.
+
+**`/grill-me-ac` and `/code-review` do stand alone**, at the two ends of the loop:
+
+- Run `/grill-me-ac` on its own when the AC deserves a look before any code exists — pin it down, have it reviewed by whoever needs to sign off, then start `/implement` from the confirmed list instead of letting the loop settle the AC in passing. This is the recommended path for anything where getting the spec wrong is expensive.
+- Run `/code-review` on its own against a branch or PR that didn't come out of this loop at all.
+
+### Day to day
+
+Type `/implement` and describe the requirement as precisely as you would in a ticket. That's it — the more precise the request, the more the AC step collapses into a single confirmation instead of a round of questions. The exceptions:
+
+| Situation | What to type |
+| --- | --- |
+| Everyday feature work or bug fix | `/implement` |
+| Trivial one-liner, typo, rename | Nothing — this flow is skipped by design |
+| The spec needs sign-off before any code exists | `/grill-me-ac` first, agree on the AC, then `/implement` |
+| Reviewing a branch or PR this loop didn't produce | `/code-review` |
 
 ## Design trade-offs
 
@@ -59,4 +96,4 @@ If you'd rather not use the CLI, copying the folders over works too:
 git clone https://github.com/leochiu-a/skills.git && cp -r skills/skills/* ~/.claude/skills/
 ```
 
-Once installed, invoke them in Claude Code with `/implement`, `/grill-me-ac`, `/tdd`, or just describe what you need and let them trigger themselves.
+Once installed, type `/implement` in Claude Code — or just describe what you want built and let it trigger itself. Reach for `/grill-me-ac` first when you want the AC settled and signed off before the loop starts, and `/code-review` on its own for a diff the loop didn't produce.
