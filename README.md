@@ -10,46 +10,26 @@ This whole set exists to make **Loop Engineering** concrete. The unit of work is
 
 `grill-me-ac` closes the front of the loop by turning a vague request into criteria that can actually be checked. `tdd` walks those criteria one slice at a time, so every pass through the loop is small enough to reason about. `code-review` closes the back of the loop with an independent check, because a loop that grades its own output drifts. And the report lands back on the same AC the loop started from, so the next iteration begins where the last one measurably ended.
 
-Every design choice in [DESIGN.md](DESIGN.md) follows from that: the loop has to be able to run unattended, it has to be honest about what it couldn't verify by itself, and its default entry point should be the whole loop rather than one of its steps — the AC gate comes out front only when a human outside the loop has to sign the spec off first.
+Two things follow, and the rest of [DESIGN.md](DESIGN.md) follows from them: the loop has to run unattended, and it has to be honest about what it couldn't verify by itself.
 
 ## Skills
 
-One skill is the way in; the rest are the discipline it runs on. Two of them can also be reached directly, in narrow cases.
-
-### The way in
-
-| Skill | What it does |
-| --- | --- |
-| [`implement`](skills/implement/SKILL.md) | A thin orchestrator: confirm the AC → hand off to TDD → review the diff → report against the AC |
-
-For any non-trivial feature or bug fix, `/implement` is the only thing you need to type — it runs the whole loop and hands you back a report against the AC.
-
-### The pieces it composes
-
-| Skill | What it does | When it's reached for |
+| Skill | What it does | Who calls it |
 | --- | --- | --- |
-| [`grill-me-ac`](skills/grill-me-ac/SKILL.md) | Pins down the AC with the fewest possible round trips, split into machine-verifiable and human-judgment buckets | Step 1 of `/implement` — see *Day to day* for the one reason to call it yourself |
-| [`tdd`](skills/tdd/SKILL.md) | Red-green-refactor, one vertical slice at a time, testing at the public seam rather than internals | Step 2 of `/implement`, once the AC is confirmed |
-| [`code-review`](skills/code-review/SKILL.md) | Reviews the diff along three independent axes: AC fidelity, repo conventions, and whether the green is trustworthy. Three sub-agents run in parallel and their results are never merged | Step 3 of `/implement`, or on any branch/PR you want reviewed |
+| [`implement`](skills/implement/SKILL.md) | Thin orchestrator: confirm the AC → hand off to TDD → review the diff → report against the AC | **You.** This is the entry point |
+| [`grill-me-ac`](skills/grill-me-ac/SKILL.md) | Pins down the AC in the fewest round trips, split into machine-verifiable and human-judgment buckets | Step 1 of `/implement` |
+| [`tdd`](skills/tdd/SKILL.md) | Red-green-refactor, one vertical slice at a time, testing at the public seam rather than internals | Step 2 of `/implement` |
+| [`code-review`](skills/code-review/SKILL.md) | Three independent axes — AC fidelity, repo conventions, and whether the green is trustworthy — as parallel sub-agents, never merged | Step 3 of `/implement` |
 
-**Don't call `/tdd` yourself.** It needs a confirmed AC to work from and has no reviewer downstream of it — calling it directly gets you the middle of the loop with neither end attached. It's the one piece that only makes sense inside `/implement`.
+### What to type
 
-The other two can be reached directly, but neither is a better way to start work than `/implement` — see *Day to day* for the only reasons to type them.
+**`/implement`**, and describe the requirement as precisely as you would in a ticket. The more precise the request, the more the AC step collapses into a single confirmation instead of a round of questions. Three exceptions:
 
-### Day to day
+- You want the AC settled and agreed with someone else before any code exists → **`/grill-me-ac`**, then `/implement`.
+- You're reviewing someone else's PR, or any diff this loop didn't produce → **`/code-review`**.
+- It's a one-liner, a typo, a rename → just make the change.
 
-**Default to `/implement`.** Describe the requirement as precisely as you would in a ticket and let it run the loop — the more precise your request, the more the AC step collapses into a single confirmation rather than a round of questions.
-
-What to type, by situation:
-
-| Situation | What to type |
-| --- | --- |
-| Building a feature or fixing a bug | `/implement` |
-| You want to settle the AC with someone else before any code exists | `/grill-me-ac`, agree on the list, then `/implement` |
-| Reviewing someone else's PR, or any diff this loop didn't produce | `/code-review` |
-| A one-liner, a typo, a rename | Nothing — just make the change |
-
-Note that "this one matters, I should be careful" isn't on that list: `/implement` runs `/grill-me-ac` as step 1 either way.
+Never `/tdd` on its own: it takes a confirmed AC from upstream and gets audited downstream, so calling it directly hands you the middle of the loop with neither end attached. And "this one matters, I should be careful" isn't a reason to start at `/grill-me-ac` — `/implement` runs it as step 1 anyway.
 
 ## Credits
 
@@ -63,25 +43,7 @@ Install with the [`skills` CLI](https://github.com/vercel-labs/skills) — it in
 npx skills add leochiu-a/skills
 ```
 
-If you pick a subset, keep all four together unless you only want `code-review` — `/implement` is a thin orchestrator and does nothing without the three skills it calls.
-
-Install at the user level (`~/.claude/skills/`) instead of just the current project:
-
-```bash
-npx skills add leochiu-a/skills --global
-```
-
-Install just one, skipping all confirmations — `code-review` is the only one that's useful alone, since `/implement` calls the other three:
-
-```bash
-npx skills add leochiu-a/skills --skill code-review -y
-```
-
-See what skills this repo has first:
-
-```bash
-npx skills add leochiu-a/skills --list
-```
+Take all four: `/implement` is a thin orchestrator and does nothing without the three skills it calls. Useful flags — `--global` installs to `~/.claude/skills/` instead of the current project, `--list` shows what's in here, `--skill code-review -y` takes the one skill that's useful alone.
 
 If you'd rather not use the CLI, copying the folders over works too:
 
@@ -89,4 +51,4 @@ If you'd rather not use the CLI, copying the folders over works too:
 git clone https://github.com/leochiu-a/skills.git && cp -r skills/skills/* ~/.claude/skills/
 ```
 
-Once installed, type `/implement` in Claude Code — or just describe what you want built and let it trigger itself. See *Day to day* above for the cases where you'd type something else.
+Then type `/implement` in Claude Code, or just describe what you want built and let it trigger itself.

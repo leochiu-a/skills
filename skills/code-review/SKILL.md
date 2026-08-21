@@ -108,16 +108,6 @@ Present the three reports verbatim, or lightly cleaned, under `## AC`, `## Stand
 
 End with one line per axis: finding count, and the worst finding within that axis. No single verdict across axes — that blend is exactly what the separation exists to prevent.
 
-## Why three axes
-
-A change can pass any one of them and fail another:
-
-- Follows every convention, implements the wrong thing → **Standards pass, AC fail.**
-- Does exactly what the AC asked, ignores the repo's conventions → **AC pass, Standards fail.**
-- Clean code, faithful to the AC, and green only because an assertion got loosened → **AC and Standards pass, Green trust fail.**
-
-Green trust is separate for a structural reason: every other signal in the loop — exit codes, CI, the TDD report — is downstream of the tests. When the tests are the thing that moved, those signals confirm each other and all of them are wrong together. Nothing else in the loop is looking at this.
-
 ---
 
 The two-axis structure and the Fowler smell baseline are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, see `NOTICE`). Standards is the original axis, AC is the original Spec axis re-pointed at the confirmed AC list, and Green trust is this repo's own.
