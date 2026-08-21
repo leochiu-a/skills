@@ -14,7 +14,7 @@ Every design choice below follows from that: the loop has to be able to run unat
 
 ## Skills
 
-One skill is the way in; the rest are the discipline it runs on. Two of them are also useful on their own.
+One skill is the way in; the rest are the discipline it runs on. Two of them can also be reached directly, in narrow cases.
 
 ### The way in
 
@@ -28,27 +28,26 @@ For a feature or a bug fix, `/implement` is the only thing you need to type — 
 
 | Skill | What it does | When it's reached for |
 | --- | --- | --- |
-| [`grill-me-ac`](skills/grill-me-ac/SKILL.md) | Pins down the AC with the fewest possible round trips, split into machine-verifiable and human-judgment buckets | Step 1 of `/implement` — **or call it yourself first** (see below) |
+| [`grill-me-ac`](skills/grill-me-ac/SKILL.md) | Pins down the AC with the fewest possible round trips, split into machine-verifiable and human-judgment buckets | Step 1 of `/implement` — see *Day to day* for the one reason to call it yourself |
 | [`tdd`](skills/tdd/SKILL.md) | Red-green-refactor, one vertical slice at a time, testing at the public seam rather than internals | Step 2 of `/implement`, once the AC is confirmed |
 | [`code-review`](skills/code-review/SKILL.md) | Reviews the diff along three independent axes: AC fidelity, repo conventions, and whether the green is trustworthy. Three sub-agents run in parallel and their results are never merged | Step 3 of `/implement`, or on any branch/PR you want reviewed |
 
 **Don't call `/tdd` yourself.** It needs a confirmed AC to work from and has no reviewer downstream of it — calling it directly gets you the middle of the loop with neither end attached. It's the one piece that only makes sense inside `/implement`.
 
-**`/grill-me-ac` and `/code-review` do stand alone**, at the two ends of the loop:
-
-- Run `/grill-me-ac` on its own when the AC deserves a look before any code exists — pin it down, have it reviewed by whoever needs to sign off, then start `/implement` from the confirmed list instead of letting the loop settle the AC in passing. This is the recommended path for anything where getting the spec wrong is expensive.
-- Run `/code-review` on its own against a branch or PR that didn't come out of this loop at all.
+The other two can be reached directly, but neither is a better way to start work than `/implement` — see *Day to day* for the only reasons to type them.
 
 ### Day to day
 
-Type `/implement` and describe the requirement as precisely as you would in a ticket. That's it — the more precise the request, the more the AC step collapses into a single confirmation instead of a round of questions. The exceptions:
+**Always `/implement`.** Describe the requirement as precisely as you would in a ticket and let it run the loop. `/implement` already calls `/grill-me-ac` as step 1, so starting there gains you nothing — and the more precise your request, the more that step collapses into a single confirmation rather than a round of questions.
 
-| Situation | What to type |
-| --- | --- |
-| Everyday feature work or bug fix | `/implement` |
-| Trivial one-liner, typo, rename | Nothing — this flow is skipped by design |
-| The spec needs sign-off before any code exists | `/grill-me-ac` first, agree on the AC, then `/implement` |
-| Reviewing a branch or PR this loop didn't produce | `/code-review` |
+Everything else is an exception, and none of them is "this task is important enough to be careful":
+
+| Situation | What to type | Why not `/implement` |
+| --- | --- | --- |
+| Everyday feature work or bug fix | `/implement` | — |
+| Trivial one-liner, typo, rename | Nothing, just do it | The whole flow is skipped by design |
+| **Another person** has to agree the AC before any code exists | `/grill-me-ac`, get the sign-off, then `/implement` | The loop can't wait on a human in another tab |
+| Reviewing a branch or PR this loop didn't produce | `/code-review` | There's nothing to implement |
 
 ## Design trade-offs
 
