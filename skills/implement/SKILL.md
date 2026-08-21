@@ -11,7 +11,7 @@ Does exactly four things: confirm AC → hand off to TDD → review the diff →
 
 Run `/grill-me-ac` to get a confirmed AC list (machine and human buckets).
 
-- If the developer already gave an explicit, unambiguous AC up front, `/grill-me-ac` should go straight into confirm mode rather than forcing extra rounds of questions.
+- If the developer already gave an explicit, unambiguous AC up front, `/grill-me-ac` skips its question round and goes straight to the converge step — one confirmation, not another round of questions.
 - Don't move to the next step until AC is confirmed.
 
 ## 2. Run TDD

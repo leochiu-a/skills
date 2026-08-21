@@ -120,4 +120,4 @@ Green trust is separate for a structural reason: every other signal in the loop 
 
 ---
 
-The two-axis structure and the Fowler smell baseline are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, see `NOTICE`). The AC axis and the Green trust axis are this repo's.
+The two-axis structure and the Fowler smell baseline are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, see `NOTICE`). Standards is the original axis, AC is the original Spec axis re-pointed at the confirmed AC list, and Green trust is this repo's own.

@@ -1,6 +1,6 @@
 ---
 name: grill-me-ac
-description: Grills the developer with the minimum number of questions needed to pin down acceptance criteria before any code is written, split into machine-verifiable and human-judgment buckets. Use when a feature, bug fix, or non-trivial change is requested and the AC isn't already explicit — either standalone or as the first step called by /implement. Skip for trivial one-line fixes.
+description: Grills the developer with the minimum number of questions needed to pin down acceptance criteria before any code is written, split into machine-verifiable and human-judgment buckets. Runs as step 1 of /implement, and standalone when the developer wants the AC settled and agreed — with a teammate, a PM, a ticket — before implementation starts. An ordinary request to build or fix something is not that case: that's /implement, which calls this skill itself. Skip for trivial one-line fixes.
 ---
 
 # Grill Me — AC
