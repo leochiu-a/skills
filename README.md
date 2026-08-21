@@ -10,7 +10,7 @@ This whole set exists to make **Loop Engineering** concrete. The unit of work is
 
 `grill-me-ac` closes the front of the loop by turning a vague request into criteria that can actually be checked. `tdd` walks those criteria one slice at a time, so every pass through the loop is small enough to reason about. `code-review` closes the back of the loop with an independent check, because a loop that grades its own output drifts. And the report lands back on the same AC the loop started from, so the next iteration begins where the last one measurably ended.
 
-Every design choice below follows from that: the loop has to be able to run unattended, it has to be honest about what it couldn't verify by itself, and its default entry point should be the whole loop rather than one of its steps — with the AC gate available up front when you want to settle the spec before the loop runs.
+Every design choice below follows from that: the loop has to be able to run unattended, it has to be honest about what it couldn't verify by itself, and its default entry point should be the whole loop rather than one of its steps — the AC gate comes out front only when a human outside the loop has to sign the spec off first.
 
 ## Skills
 
@@ -22,7 +22,7 @@ One skill is the way in; the rest are the discipline it runs on. Two of them can
 | --- | --- |
 | [`implement`](skills/implement/SKILL.md) | A thin orchestrator: confirm the AC → hand off to TDD → review the diff → report against the AC |
 
-For a feature or a bug fix, `/implement` is the only thing you need to type — it runs the whole loop and hands you back a report against the AC.
+For any non-trivial feature or bug fix, `/implement` is the only thing you need to type — it runs the whole loop and hands you back a report against the AC.
 
 ### The pieces it composes
 
@@ -61,7 +61,7 @@ Everything else is an exception, and none of them is "this task is important eno
 
 ## Credits
 
-The two-axis structure of `code-review` and the Fowler code smell baseline are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, see [NOTICE](NOTICE)). The AC axis and the Green trust axis are this repo's own.
+`code-review`'s two-axis structure and its Fowler code smell baseline are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, see [NOTICE](NOTICE)). The version here runs three axes: Standards is the original one, AC is the original Spec axis re-pointed at the confirmed AC list, and Green trust is this repo's own.
 
 ## Installation
 
@@ -71,16 +71,18 @@ Install with the [`skills` CLI](https://github.com/vercel-labs/skills) — it in
 npx skills add leochiu-a/skills
 ```
 
+If you pick a subset, keep all four together unless you only want `code-review` — `/implement` is a thin orchestrator and does nothing without the three skills it calls.
+
 Install at the user level (`~/.claude/skills/`) instead of just the current project:
 
 ```bash
 npx skills add leochiu-a/skills --global
 ```
 
-Install just one of them, skipping all confirmations:
+Install just one, skipping all confirmations — `code-review` is the only one that's useful alone, since `/implement` calls the other three:
 
 ```bash
-npx skills add leochiu-a/skills --skill tdd -y
+npx skills add leochiu-a/skills --skill code-review -y
 ```
 
 See what skills this repo has first:
@@ -95,4 +97,4 @@ If you'd rather not use the CLI, copying the folders over works too:
 git clone https://github.com/leochiu-a/skills.git && cp -r skills/skills/* ~/.claude/skills/
 ```
 
-Once installed, type `/implement` in Claude Code — or just describe what you want built and let it trigger itself. Reach for `/grill-me-ac` first when you want the AC settled and signed off before the loop starts, and `/code-review` on its own for a diff the loop didn't produce.
+Once installed, type `/implement` in Claude Code — or just describe what you want built and let it trigger itself. See *Day to day* above for the two cases where you'd type something else.
