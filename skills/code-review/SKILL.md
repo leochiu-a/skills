@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Reviews the diff between HEAD and a fixed point along three independent axes — AC (does it do what the confirmed AC asked?), Standards (does it follow this repo's conventions?), and Green trust (is the green build earned, or was it engineered?). Runs the axes as parallel sub-agents and reports them side by side without merging. Use when the developer asks to review a branch, a PR, or work in progress, or when /implement hands off after the TDD loop finishes.
+description: Reviews the diff between HEAD and a fixed point along three independent axes — AC (does it do what the confirmed AC asked?), Standards (does it follow this repo's conventions?), and Green trust (is the green build earned, or was it engineered?). Runs at most two sub-agents — AC and Standards share one context, Green trust always gets its own — and reports every axis side by side without merging. Use when the developer asks to review a branch, a PR, or work in progress, or when /implement hands off after the TDD loop finishes.
 ---
 
 # Code review — three axes, never merged
@@ -11,9 +11,11 @@ Reviews `git diff <fixed-point>...HEAD` along three axes that fail independently
 - **Standards** — does it conform to how this repo writes code?
 - **Green trust** — is the green build earned by the implementation, or manufactured by editing the tests?
 
-Each axis runs as its own sub-agent, for two separate reasons: so the axes don't pollute each other's context, and so no axis is judged by a context that has a stake in the verdict. This skill only pins the inputs and aggregates the outputs — it does not judge the diff itself.
+Three axes, but **never more than two sub-agents**. AC and Standards share one context: both judge the diff against a fixed written reference, and Standards *needs* the AC anyway — the Speculative Generality smell is defined against it. Green trust always gets a context of its own, because its stance ("assume the green build is a lie") cannot survive next to the account of why the change is fine. Step 4 decides whether either sub-agent is needed at all.
 
-**If this skill is running in the context that wrote the code** (e.g. `/implement` called it right after `/tdd`), that context is a witness, not the reviewer. Its job here is strictly mechanical: resolve the ref, derive the diff, spawn the axes. It does not get to explain the diff to them.
+This skill only pins the inputs and aggregates the outputs — it does not judge the diff itself.
+
+**If this skill is running in the context that wrote the code** (e.g. `/implement` called it right after `/tdd`), that context is a witness, not the reviewer. Its job here is strictly mechanical: resolve the ref, derive the diff, spawn the sub-agents. It does not get to explain the diff to them, and it may not run any axis inline.
 
 ## Precondition
 
@@ -31,7 +33,7 @@ git diff --stat <fixed-point>...HEAD
 git log <fixed-point>..HEAD --oneline
 ```
 
-Three-dot, so the comparison is against the merge-base. A bad ref or an empty diff fails here, not inside three sub-agents.
+Three-dot, so the comparison is against the merge-base. A bad ref or an empty diff fails here, not inside a sub-agent.
 
 ## 2. Find the AC
 
@@ -41,11 +43,13 @@ In this order:
 2. The PR description or ticket — `/grill-me-ac` logs the AC there precisely so this step works across sessions.
 3. A path the developer passed in.
 
-If none is found, ask. If the developer says there is no AC, the AC axis skips and reports "no AC available" — it does **not** reverse-engineer the AC from the diff, which would make the axis tautological.
+If none is found, ask. If the developer says there is no AC, the AC half of the first sub-agent skips and reports "no AC available" — it does **not** reverse-engineer the AC from the diff, which would make the axis tautological. Standards and Green trust still run.
 
 ## 3. Find the standards sources
 
 Whatever this repo documents about how code should be written — `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `CODING_STANDARDS.md`, an ESLint config with hand-written rules.
+
+**Pass only the guideline files whose scope the changed paths actually touch.** A `server/`-only diff has no use for the SCSS, component, or design-token guidelines, and irrelevant guidelines are most of this axis's token bill. Always include the repo-root ones (`AGENTS.md`, `CLAUDE.md`, root ESLint), and include anything you're unsure about. This trims the *reference material*, never the diff under review — the rule against narrowing scope in step 5 still binds.
 
 On top of that, the Standards axis always carries the **smell baseline** below, so it still has something to say in a repo that documents nothing. Two rules bind it:
 
@@ -67,26 +71,52 @@ Each smell reads *what it is* → *how to fix*:
 - **Middle Man** — a class or function that mostly just delegates onward. → cut it, call the real target direct.
 - **Refused Bequest** — a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
-## 4. Spawn the axes in parallel
+## 4. Scope the run
 
-One message, three `Agent` calls (`general-purpose`). Each prompt carries the diff command and the commit list, plus the axis brief below.
+Two sub-agents is the ceiling, not the default. Decide from `--stat` and `--name-only` alone — never by reading the full diff, which is the isolation this skill exists to buy.
 
-Rules that bind all three prompts:
+**Does Green trust run?** It has something to audit iff the diff touches either:
+
+- a test file — added, modified, renamed, or deleted (check `git diff --diff-filter=D --name-only` too), or
+- a config that can suppress a failure — test runner, coverage threshold, `tsconfig`, lint config, CI workflow.
+
+Neither present → skip it and say so in the report: "no test or config churn to audit". Otherwise it runs, and **always as its own sub-agent**. By the time you reach this skill you have usually read the PR description or the implementer's account; that is exactly the justification this axis must never be handed.
+
+**Does the AC + Standards sub-agent run, or go inline?** It is checklist work against a fixed reference with no stake in the verdict, so the deciding factor is whether the diff crowds out judgement:
+
+- The calling context wrote the code → sub-agent, always. It is a witness, not the reviewer.
+- Large diff — roughly 500+ changed lines or 15+ files, a rule of thumb rather than a cutoff → sub-agent.
+- Otherwise → inline, in one pass, still bound by the separate-reports rule in step 5 and the no-merge rule in step 6.
+
+So: a two-file fix with one test touched costs one sub-agent; a docs-only change costs none; a large port costs two, and earns them.
+
+## 5. Spawn
+
+One message, one `Agent` call per sub-agent step 4 selected (`general-purpose`). Each prompt carries the diff command and the commit list, plus the brief below.
+
+Rules that bind every prompt:
 
 - **Commands and file paths, not narrative.** Give each sub-agent the `git` commands to run and the files to read. Never a summary of what the change does, what problem it solved, or which parts are "fine" — a sub-agent told where to look stops looking elsewhere.
 - **No justification, pre-emptive or otherwise.** If a test change has a defence, the sub-agent is the one to find it in the diff and the AC. Supplying it up front converts the axis from an audit into a confirmation.
 - **Derive scope mechanically.** Test paths for the Green trust axis come from `git diff --name-only` filtered by the repo's test convention, not from a hand-picked list. A narrowed glob is indistinguishable from a hidden finding.
 
+### Sub-agent 1 — AC + Standards
 
-**AC axis** — the confirmed AC list, verbatim.
+Carries: the confirmed AC list verbatim, the trimmed standards sources from step 3, and **the smell baseline pasted in full** (the sub-agent has no other access to it).
 
-> Report: (a) `machine` AC items that are missing or only partially implemented; (b) behaviour in the diff that no AC item asked for (scope creep); (c) items that look implemented but where the implementation looks wrong. Quote the AC item for each finding. Say nothing about `human` AC items — those are for the developer to judge, not you. Under 400 words.
+Two axes in one context is a token saving, not a licence to blend them. Bind it with all three of these:
 
-**Standards axis** — the standards-source files found in step 3, **plus the smell baseline pasted in full** (the sub-agent has no other access to it).
+- **Two separate reports, ~400 words each.** Return them under `### AC` and `### Standards`. Never one combined list.
+- **Standards first, AC second.** Judge the code against the conventions *before* reading what the AC blessed, so the AC's approval can't retroactively excuse a smell.
+- **No cross-suppression.** If the AC asked for something that is also a smell, report it on both axes. "The AC wanted it" is not a Standards defence, and "it's ugly" is not an AC finding.
 
-> Report, per file or hunk: (a) every place the diff violates a documented standard — cite the standard, file and rule; (b) any baseline smell you spot — name it and quote the hunk. Distinguish hard violations from judgement calls: a documented-standard breach can be hard, a baseline smell never is, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words.
+> **AC.** Report: (a) `machine` AC items that are missing or only partially implemented; (b) behaviour in the diff that no AC item asked for (scope creep); (c) items that look implemented but where the implementation looks wrong. Quote the AC item for each finding. Say nothing about `human` AC items — those are for the developer to judge, not you.
+>
+> **Standards.** Report, per file or hunk: (a) every place the diff violates a documented standard — cite the standard, file and rule; (b) any baseline smell you spot — name it and quote the hunk. Distinguish hard violations from judgement calls: a documented-standard breach can be hard, a baseline smell never is, and a documented repo standard overrides the baseline. Skip anything tooling enforces.
 
-**Green trust axis** — the test-file diff specifically (`git diff <fixed-point>...HEAD -- <test paths>`), plus the confirmed AC, plus the per-file `--stat`.
+### Sub-agent 2 — Green trust
+
+Carries: the test-file diff specifically (`git diff <fixed-point>...HEAD -- <test paths>`), the confirmed AC, and the per-file `--stat`. Nothing else — in particular, not the PR description's account of why the tests look the way they do.
 
 > Assume the green build is a lie until the diff proves otherwise. Your question is not "is this code good" — it is "did the implementation earn this green, or did the tests get bent to fit the implementation?" Report every instance of:
 > - a test deleted, renamed into irrelevance, `skip`ped, `only`d, or commented out
@@ -100,11 +130,11 @@ Rules that bind all three prompts:
 >
 > Quote the hunk for each. Flag the ratio when the test diff is large relative to the implementation diff — a change that edits mostly tests deserves suspicion. A legitimate test change is one the AC or an intentional behaviour change justifies; say which justification you accepted and why. Under 400 words.
 
-If there's no AC, skip the AC axis and note it in the report. Never skip Green trust — it needs no AC to function.
+A missing AC never disables this axis — it needs no AC to function. Only the churn gate in step 4 can skip it.
 
-## 5. Aggregate
+## 6. Aggregate
 
-Present the three reports verbatim, or lightly cleaned, under `## AC`, `## Standards`, and `## Green trust`. Do **not** merge, rerank, or dedupe across axes.
+Present all three reports verbatim, or lightly cleaned, under `## AC`, `## Standards`, and `## Green trust` — three headings even when two axes came back from one sub-agent. Do **not** merge, rerank, or dedupe across axes.
 
 End with one line per axis: finding count, and the worst finding within that axis. No single verdict across axes — that blend is exactly what the separation exists to prevent.
 

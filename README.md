@@ -19,7 +19,7 @@ Two things follow, and the rest of [DESIGN.md](DESIGN.md) follows from them: the
 | [`implement`](skills/implement/SKILL.md) | Thin orchestrator: confirm the AC → hand off to TDD → review the diff → report against the AC | **You.** This is the entry point |
 | [`grill-me-ac`](skills/grill-me-ac/SKILL.md) | Pins down the AC in the fewest round trips, split into machine-verifiable and human-judgment buckets | Step 1 of `/implement` |
 | [`tdd`](skills/tdd/SKILL.md) | Red-green-refactor, one vertical slice at a time, testing at the public seam rather than internals | Step 2 of `/implement` |
-| [`code-review`](skills/code-review/SKILL.md) | Three independent axes — AC fidelity, repo conventions, and whether the green is trustworthy — as parallel sub-agents, never merged | Step 3 of `/implement` |
+| [`code-review`](skills/code-review/SKILL.md) | Three independent axes — AC fidelity, repo conventions, and whether the green is trustworthy — reported side by side, never merged | Step 3 of `/implement` |
 
 ### What to type
 
